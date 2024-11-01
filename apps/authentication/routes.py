@@ -119,15 +119,12 @@ def not_found_error(error):
 def internal_error(error):
     return render_template('home/page-500.html'), 500
 '''
-
-import pam
-from flask import Flask, request, render_template, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required
+import pam
+from apps import login_manager
 
-app = Flask(__name__)
-app.secret_key = 'your_secret_key'
-login_manager = LoginManager()
-login_manager.init_app(app)
+blueprint = Blueprint('authentication_blueprint', __name__)
 
 pam_auth = pam.pam()
 
@@ -139,7 +136,7 @@ class User(UserMixin):
 def load_user(user_id):
     return User(user_id)
 
-@app.route('/login', methods=['GET', 'POST'])
+@blueprint.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form['username']
@@ -147,21 +144,12 @@ def login():
         if pam_auth.authenticate(username, password):
             user = User(username)
             login_user(user)
-            return redirect(url_for('index'))
+            return redirect(url_for('home_blueprint.index'))
         else:
             return 'Invalid credentials', 401
     return render_template('login.html')
 
-@app.route('/logout')
-@login_required
+@blueprint.route('/logout')
 def logout():
     logout_user()
-    return redirect(url_for('login'))
-
-@app.route('/')
-@login_required
-def index():
-    return 'Hello, {}!'.format(request.user.id)
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    return redirect(url_for('authentication_blueprint.login'))
