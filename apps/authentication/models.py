@@ -5,7 +5,7 @@ Copyright (c) 2019 - present AppSeed.us
 
 from flask_login import UserMixin
 
-from apps import db, login_manager
+from apps import login_manager
 
 from apps.authentication.util import hash_pass
 

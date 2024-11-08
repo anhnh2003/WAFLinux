@@ -34,3 +34,7 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('authentication_blueprint.login'))
+
+@blueprint.route('/')
+def index():
+    return redirect(url_for('authentication_blueprint.login'))
