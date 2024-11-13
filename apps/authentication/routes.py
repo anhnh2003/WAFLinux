@@ -25,7 +25,7 @@ def login():
         if pam_auth.authenticate(username, password):
             user = User(username)
             login_user(user)
-            return redirect(url_for('home_blueprint.index'))
+            return redirect(url_for('home_blueprint.default'))
         else:
             return render_template('accounts/login.html', form=form, msg='Invalid credentials')
     return render_template('accounts/login.html', form=form)
