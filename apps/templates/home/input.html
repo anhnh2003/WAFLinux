@@ -1,11 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Input Status</title>
+    <link href="{{ config.ASSETS_ROOT }}/css/iptable_status.css" rel="stylesheet">  
+    <title>iptables Rules</title>
 </head>
 <body>
-    <h1>Input Status</h1>
-    <pre>{{ status }}</pre>
+
+    <h2>iptables INPUT Rules</h2>
+    <div class="table-wrapper">
+        <table class="fl-table">
+            <thead>
+                <tr>
+                    <th>Target</th>
+                    <th>Prot</th>
+                    <th>Opt</th>
+                    <th>Source</th>
+                    <th>Destination</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in table_data %}
+                <tr>
+                    {% for cell in row %}
+                    <td>{{ cell }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </body>
 </html>

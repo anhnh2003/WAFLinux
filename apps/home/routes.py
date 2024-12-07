@@ -52,23 +52,39 @@ def get_segment(request):
 @login_required
 def input():
     input_status = query_iptables('INPUT')
-    return render_template('home/input.html', status=input_status)
+    #parse the output into a list of lists, where each inner list represents a row of the iptables output
+    table_data = parse_iptables_output(input_status)
+    return render_template('home/input.html', table_data=table_data)
+
+
 
 @blueprint.route('/output')
 @login_required
 def output():
     output_status = query_iptables('OUTPUT')
-    return render_template('home/output.html', status=output_status)
+    #parse the output into a list of lists, where each inner list represents a row of the iptables output
+    table_data = parse_iptables_output(output_status)
+    return render_template('home/output.html', table_data=table_data)
 
 @blueprint.route('/forward')
 @login_required
 def forward():
     forward_status = query_iptables('FORWARD')
-    return render_template('home/forward.html', status=forward_status)
+    #parse the output into a list of lists, where each inner list represents a row of the iptables output
+    table_data = parse_iptables_output(forward_status)
+    return render_template('home/forward.html', table_data=table_data)
 
+sudo_password = 'Gauvoi23'
 def query_iptables(chain):
-    try:
-        result = subprocess.run(['sudo', 'iptables', '-L', chain], capture_output=True, text=True, check=True)
-        return result.stdout
-    except subprocess.CalledProcessError as e:
-        return f"An error occurred while querying data: {e}"
+    command = "echo {} | sudo -S iptables -L {}".format(sudo_password, chain)
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=None, shell=True)
+    output = process.communicate()
+    return output[0].decode('utf-8')
+def parse_iptables_output(output):
+    table_data = []
+    for line in output.splitlines():
+        if line.startswith('Chain'):
+            continue  # Skip the header line
+        fields = line.split()
+        table_data.append(fields)
+    return table_data
