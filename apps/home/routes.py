@@ -48,31 +48,31 @@ def get_segment(request):
 
     except:
         return None
-@blueprint.route('/input')
+@blueprint.route('/input_status')
 @login_required
-def input():
+def input_status():
     input_status = query_iptables('INPUT')
     #parse the output into a list of lists, where each inner list represents a row of the iptables output
     table_data = parse_iptables_output(input_status)
-    return render_template('home/input.html', table_data=table_data)
+    return render_template('home/input_status.html', table_data=table_data)
 
 
 
-@blueprint.route('/output')
+@blueprint.route('/output_status')
 @login_required
-def output():
+def output_status():
     output_status = query_iptables('OUTPUT')
     #parse the output into a list of lists, where each inner list represents a row of the iptables output
     table_data = parse_iptables_output(output_status)
-    return render_template('home/output.html', table_data=table_data)
+    return render_template('home/output_status.html', table_data=table_data)
 
-@blueprint.route('/forward')
+@blueprint.route('/forward_status')
 @login_required
-def forward():
+def forward_status():
     forward_status = query_iptables('FORWARD')
     #parse the output into a list of lists, where each inner list represents a row of the iptables output
     table_data = parse_iptables_output(forward_status)
-    return render_template('home/forward.html', table_data=table_data)
+    return render_template('home/forward_status.html', table_data=table_data)
 
 sudo_password = 'Gauvoi23'
 def query_iptables(chain):

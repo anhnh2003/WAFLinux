@@ -56,5 +56,19 @@ $(function() {
     $('#sidebarnav >li >a.has-arrow').on('click', function (e) {
         e.preventDefault();
     });
-    
+    document.addEventListener('DOMContentLoaded', function () {
+        var sidebarLinks = document.querySelectorAll('.sidebar-nav .has-arrow');
+        sidebarLinks.forEach(function (link) {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                var parent = link.parentElement;
+                var collapse = parent.querySelector('.collapse');
+                if (collapse.classList.contains('show')) {
+                    collapse.classList.remove('show');
+                } else {
+                    collapse.classList.add('show');
+                }
+            });
+        });
+    });
 });
