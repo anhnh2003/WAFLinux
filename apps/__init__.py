@@ -11,7 +11,10 @@ from importlib import import_module
 
 
 login_manager = LoginManager()
-
+# Specify the login view (redirect for unauthorized users)
+login_manager.login_view = 'authentication_blueprint.login'
+login_manager.login_message = 'Please log in to access this page.'
+login_manager.login_message_category = 'info'  # Optional: category for flash messages
 
 def register_extensions(app):
     login_manager.init_app(app)

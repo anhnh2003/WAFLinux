@@ -1,0 +1,270 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Dashboard {% endblock %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+
+    <!-- chartist CSS -->
+    <link href="{{ config.ASSETS_ROOT }}/plugins/chartist-js/dist/chartist.min.css" rel="stylesheet">
+    <link href="{{ config.ASSETS_ROOT }}/plugins/chartist-js/dist/chartist-init.css" rel="stylesheet">
+    <link href="{{ config.ASSETS_ROOT }}/plugins/chartist-plugin-tooltip-master/dist/chartist-plugin-tooltip.css" rel="stylesheet">
+    <!--This page css - Morris CSS -->
+    <link href="{{ config.ASSETS_ROOT }}/plugins/c3-master/c3.min.css" rel="stylesheet">
+
+{% endblock stylesheets %}
+
+{% block content %}
+    <style>
+        .form-container {
+            margin: 20px;
+        }
+        .form-row {
+            margin-bottom: 10px;
+        }
+        .is-invalid {
+            border-color: #dc3545;
+        }
+        .error-message {
+            display: none;
+            position: absolute;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            padding: 5px;
+            border-radius: 5px;
+            z-index: 1000;
+        }
+        .rule-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+    </style>
+
+    <!-- ============================================================== -->
+    <!-- Bread crumb and right sidebar toggle -->
+    <!-- ============================================================== -->
+    <div class="page-breadcrumb">
+        <div class="row align-items-center">
+            <div class="col-md-6 col-8 align-self-center">
+                <h3 class="page-title mb-0 p-0">Dashboard</h3>
+                <div class="d-flex align-items-center">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+            <div class="col-md-6 col-4 align-self-center">
+                <div class="text-end upgrade-btn">
+                        <a href="https://appseed.us/support/"
+                        class="btn btn-danger d-none d-md-inline-block text-white" target="_blank">
+                        Support        
+                        </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ============================================================== -->
+    <!-- End Bread crumb and right sidebar toggle -->
+    <!-- ============================================================== -->
+    <!-- ============================================================== -->
+    <!-- Container fluid  -->
+    <!-- ============================================================== -->
+    <div class="container form-container">
+        <h2>Add New Rule</h2>
+        <div class="rule-header">
+            <span>Rule number 1</span>
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeRule(this)">Delete</button>
+        </div>
+        <form id="rulesForm" method="POST" action="{{ url_for('home_blueprint.add_rule') }}">
+            <input type="hidden" id="errorMessage" value="{{ error_message }}">
+            <div id="rulesContainer">
+                <div class="form-row">
+                    <div class="col">
+                        <select class="form-control" name="chain[]" required>
+                            <option value="INPUT">INPUT</option>
+                            <option value="OUTPUT">OUTPUT</option>
+                            <option value="FORWARD">FORWARD</option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <select class="form-control" name="target[]" required>
+                            <option value="drop">DROP</option>
+                            <option value="accept">ACCEPT</option>
+                            <option value="reject">REJECT</option>
+                            <option value="log">LOG</option>
+                            <option value="return">RETURN</option>
+                        </select>
+                        <div class="error-message">Please enter a valid action (drop, accept, reject, log, return).</div>
+                    </div>
+                    <div class="col">
+                        <input type="text" class="form-control" name="prot[]" placeholder="Protocol" required>
+                        <div class="error-message">Please enter a valid protocol.</div>
+                    </div>
+                    <div class="col">
+                        <input type="text" class="form-control" name="source[]" placeholder="Source" required>
+                        <div class="error-message">Please enter a valid IP address (e.g., 192.168.0.1).</div>
+                    </div>
+                    <div class="col">
+                        <input type="text" class="form-control" name="destination[]" placeholder="Destination" required>
+                        <div class="error-message">Please enter a valid IP address (e.g., 192.168.0.1).</div>
+                    </div>
+                    <div class="col">
+                        <input type="text" class="form-control" name="sport[]" placeholder="Source Port">
+                        <div class="error-message">Please enter a valid port number (1-65535).</div>
+                    </div>
+                    <div class="col">
+                        <input type="text" class="form-control" name="dport[]" placeholder="Destination Port">
+                        <div class="error-message">Please enter a valid port number (1-65535).</div>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-secondary" id="addRuleButton">Add New Rule</button>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+
+    <script>
+        let ruleNumber = 2;
+
+        document.getElementById('addRuleButton').addEventListener('click', function() {
+            var rulesContainer = document.getElementById('rulesContainer');
+            var newRow = document.createElement('div');
+            newRow.className = 'form-row';
+            newRow.innerHTML = `
+                <div class="rule-header">
+                    <span>Rule number ${ruleNumber}</span>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="removeRule(this)">Delete</button>
+                </div>
+                <div class="col">
+                    <select class="form-control" name="chain[]">
+                        <option value="INPUT">INPUT</option>
+                        <option value="OUTPUT">OUTPUT</option>
+                        <option value="FORWARD">FORWARD</option>
+                    </select>
+                </div>
+                <div class="col">
+                    <select class="form-control" name="target[]" required>
+                        <option value="drop">DROP</option>
+                        <option value="accept">ACCEPT</option>
+                        <option value="reject">REJECT</option>
+                        <option value="log">LOG</option>
+                        <option value="return">RETURN</option>
+                    </select>
+                    <div class="error-message">Please enter a valid action (drop, accept, reject, log, return).</div>
+                </div>
+                <div class="col">
+                    <input type="text" class="form-control" name="prot[]" placeholder="Protocol" required>
+                    <div class="error-message">Please enter a valid protocol.</div>
+                </div>
+                <div class="col">
+                    <input type="text" class="form-control" name="source[]" placeholder="Source" required>
+                    <div class="error-message">Please enter a valid IP address (e.g., 192.168.0.1).</div>
+                </div>
+                <div class="col">
+                    <input type="text" class="form-control" name="destination[]" placeholder="Destination" required>
+                    <div class="error-message">Please enter a valid IP address (e.g., 192.168.0.1).</div>
+                </div>
+                <div class="col">
+                    <input type="text" class="form-control" name="sport[]" placeholder="Source Port">
+                    <div class="error-message">Please enter a valid port number (1-65535).</div>
+                </div>
+                <div class="col">
+                    <input type="text" class="form-control" name="dport[]" placeholder="Destination Port">
+                    <div class="error-message">Please enter a valid port number (1-65535).</div>
+                </div>
+            `;
+            rulesContainer.appendChild(newRow);
+            ruleNumber++;
+        });
+
+        function removeRule(button) {
+            var ruleRow = button.closest('.form-row');
+            ruleRow.remove();
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('rulesForm').addEventListener('submit', function (event) {
+                var isValid = true;
+
+                // Validate target field
+                var targetFields = document.querySelectorAll('select[name="target[]"]');
+                var validTargets = ['drop', 'accept', 'reject', 'log', 'return'];
+                targetFields.forEach(function (field) {
+                    var errorMessage = field.nextElementSibling;
+                    if (!validTargets.includes(field.value.toLowerCase())) {
+                        isValid = false;
+                        field.classList.add('is-invalid');
+                        errorMessage.style.display = 'block';
+                    } else {
+                        field.classList.remove('is-invalid');
+                        errorMessage.style.display = 'none';
+                    }
+                });
+
+                // Validate IP address fields
+                var ipFields = document.querySelectorAll('input[name="source[]"], input[name="destination[]"]');
+                var ipPattern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+                ipFields.forEach(function (field) {
+                    var errorMessage = field.nextElementSibling;
+                    if (!ipPattern.test(field.value)) {
+                        isValid = false;
+                        field.classList.add('is-invalid');
+                        errorMessage.style.display = 'block';
+                    } else {
+                        field.classList.remove('is-invalid');
+                        errorMessage.style.display = 'none';
+                    }
+                });
+
+                // Validate port fields
+                var portFields = document.querySelectorAll('input[name="sport[]"], input[name="dport[]"]');
+                var portPattern = /^([0-9]{1,5})$/;
+                portFields.forEach(function (field) {
+                    var port = parseInt(field.value, 10);
+                    var errorMessage = field.nextElementSibling;
+                    if (!portPattern.test(field.value) || port < 1 || port > 65535) {
+                        isValid = false;
+                        field.classList.add('is-invalid');
+                        errorMessage.style.display = 'block';
+                    } else {
+                        field.classList.remove('is-invalid');
+                        errorMessage.style.display = 'none';
+                    }
+                });
+
+                if (!isValid) {
+                    event.preventDefault();
+                }
+            });
+
+            // Display error message if present
+            var errorMessage = document.getElementById('errorMessage').value;
+            if (errorMessage) {
+                alert(errorMessage);
+            }
+        });
+    </script>
+
+{% endblock content %}
+
+{% block javascripts %}
+
+    <!-- ============================================================== -->
+    <!-- This page plugins -->
+    <!-- ============================================================== -->
+    <!-- chartist chart -->
+    <script src="{{ config.ASSETS_ROOT }}/plugins/chartist-js/dist/chartist.min.js"></script>
+    <script src="{{ config.ASSETS_ROOT }}/plugins/chartist-plugin-tooltip-master/dist/chartist-plugin-tooltip.min.js"></script>
+    <!--c3 JavaScript -->
+    <script src="{{ config.ASSETS_ROOT }}/plugins/d3/d3.min.js"></script>
+    <script src="{{ config.ASSETS_ROOT }}/plugins/c3-master/c3.min.js"></script>
+    <!--Custom JavaScript -->
+    <script src="{{ config.ASSETS_ROOT }}/js/pages/dashboards/dashboard1.js"></script>
+
+{% endblock javascripts %}
