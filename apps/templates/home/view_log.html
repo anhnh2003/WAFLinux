@@ -97,6 +97,12 @@
                 $('#noResultMessage').hide();
             }
         });
+
+        $('#logTable thead th').on('click', function() {
+            var column = table.column($(this).index());
+            var order = column.order();
+            column.order(order[0][1] === 'asc' ? 'desc' : 'asc').draw();
+        });
     });
 </script>
 {% endblock javascripts %}
