@@ -7,7 +7,7 @@ import subprocess
 import re
 import shlex
 import html
-
+sudo_password = '123456'
 @blueprint.route('/')
 @login_required
 def default():
@@ -73,7 +73,7 @@ def forward_status():
     table_data = parse_iptables_output(forward_status)
     return render_template('home/status.html', table_data=table_data,   chain='FORWARD')
 
-sudo_password = 'Gauvoi23'
+
 def query_iptables(chain):
     command = "echo {} | sudo -S iptables -L {} --line-numbers".format(sudo_password, chain)
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=None, shell=True)
@@ -271,8 +271,10 @@ def parse_log_line(line):
     # Define the regex pattern
     pattern = re.compile(
         r'(?P<timestamp>\S+)\s+(?P<hostname>\S+)\s+kernel:\s+(?P<chain>[A-Z]+)\s+LOG:\s+'
-        r'IN=(?P<in_interface>\S*)\s+OUT=(?P<out_interface>\S*)\s+SRC=(?P<src_ip>\S+)\s+'
-        r'DST=(?P<dst_ip>\S+)\s+LEN=(?P<length>\d+)\s+TOS=(?P<tos>\S+)\s+PREC=(?P<prec>\S+)\s+'
+        r'IN=(?P<in_interface>\S*)\s+OUT=(?P<out_interface>\S*)\s+'
+        r'(?:MAC=(?P<mac>[A-Fa-f0-9: ]+)\s+)?'
+        r'SRC=(?P<src_ip>\S+)\s+DST=(?P<dst_ip>\S+)\s+LEN=(?P<length>\d+)\s+'
+        r'TOS=(?P<tos>\S+)\s+PREC=(?P<prec>\S+)\s+'
         r'TTL=(?P<ttl>\d+)\s+ID=(?P<id>\d+)\s+(?P<flags>\S+)\s+PROTO=(?P<protocol>\S+)\s+'
         r'SPT=(?P<src_port>\d+)\s+DPT=(?P<dst_port>\d+)\s+WINDOW=(?P<window>\d+)\s+'
         r'RES=(?P<res>\S+)\s+(?P<detail>.+)?'
