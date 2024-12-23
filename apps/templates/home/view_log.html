@@ -14,29 +14,52 @@
             <thead>
                 <tr>
                     <th>Timestamp</th>
+                    <th>Hostname</th>
                     <th>Chain</th>
+                    <th>In Interface</th>
+                    <th>Out Interface</th>
                     <th>Source IP</th>
                     <th>Destination IP</th>
+                    <th>Length</th>
+                    <th>TOS</th>
+                    <th>PREC</th>
+                    <th>TTL</th>
+                    <th>ID</th>
+                    <th>Flags</th>
                     <th>Protocol</th>
                     <th>Source Port</th>
                     <th>Destination Port</th>
-                    <th>Action</th>
+                    <th>Window</th>
+                    <th>RES</th>
+                    <th>Detail</th>
                 </tr>
             </thead>
             <tbody>
                 {% for entry in log_entries %}
                 <tr>
                     <td>{{ entry.timestamp }}</td>
+                    <td>{{ entry.hostname }}</td>
                     <td>{{ entry.chain }}</td>
-                    <td>{{ entry.src }}</td>
-                    <td>{{ entry.dst }}</td>
-                    <td>{{ entry.proto }}</td>
-                    <td>{{ entry.spt }}</td>
-                    <td>{{ entry.dpt }}</td>
-                    <td>{{ entry.action }}</td>
+                    <td>{{ entry.in_interface }}</td>
+                    <td>{{ entry.out_interface }}</td>
+                    <td>{{ entry.src_ip }}</td>
+                    <td>{{ entry.dst_ip }}</td>
+                    <td>{{ entry.length }}</td>
+                    <td>{{ entry.tos }}</td>
+                    <td>{{ entry.prec }}</td>
+                    <td>{{ entry.ttl }}</td>
+                    <td>{{ entry.id }}</td>
+                    <td>{{ entry.flags }}</td>
+                    <td>{{ entry.protocol }}</td>
+                    <td>{{ entry.src_port }}</td>
+                    <td>{{ entry.dst_port }}</td>
+                    <td>{{ entry.window }}</td>
+                    <td>{{ entry.res }}</td>
+                    <td>{{ entry.detail }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
+            
         </table>
     </div>
 </div>
