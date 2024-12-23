@@ -4,13 +4,18 @@
 
 {% block stylesheets %}
 <link href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css" rel="stylesheet">
+<style>
+    .dataTables_wrapper {
+        overflow-x: auto;
+    }
+</style>
 {% endblock stylesheets %}
 
 {% block content %}
 <div class="container-fluid">
     <h2>IPTables Logs</h2>
     <div class="table-wrapper">
-        <table id="logTable" class="display">
+        <table id="logTable" class="display nowrap" style="width:100%">
             <thead>
                 <tr>
                     <th>Timestamp</th>
@@ -59,8 +64,13 @@
                 </tr>
                 {% endfor %}
             </tbody>
-            
         </table>
+    </div>
+    <div>
+        <label for="filterInput">Filter:</label>
+        <input type="text" id="filterInput" placeholder="Enter filter value">
+        <button id="filterButton">Apply Filter</button>
+        <p id="noResultMessage" style="display:none;">No result found</p>
     </div>
 </div>
 {% endblock content %}
@@ -70,11 +80,23 @@
 <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
 <script>
     $(document).ready(function() {
-        $('#logTable').DataTable({
+        var table = $('#logTable').DataTable({
             "order": [[0, "desc"]],
             "searching": true,
             "paging": true,
-            "info": true
+            "info": true,
+            "scrollX": true
+        });
+
+        $('#filterButton').on('click', function() {
+            var filterValue = $('#filterInput').val();
+            table.search(filterValue).draw();
+
+            if (table.rows({ filter: 'applied' }).data().length === 0) {
+                $('#noResultMessage').show();
+            } else {
+                $('#noResultMessage').hide();
+            }
         });
     });
 </script>
