@@ -13,7 +13,6 @@ def parse_iptables_output(output):
             continue
         #if line.startswith('ACCEPT') or line.startswith('DROP') or line.startswith('REJECT') or line.startswith('RETURN'):
         parts = line.split()
-        print(len(parts))
         target = parts[0]
         prot = parts[1]
         opt = parts[2]
@@ -34,13 +33,14 @@ def parse_iptables_output(output):
         table_data.append([target, prot, opt, source, destination, s_port, d_port, detail])
     return table_data
 #parse a sample iptables output
-output = '''Chain INPUT (policy ACCEPT)
-target     prot opt source               destination
-ACCEPT     all  --  anywhere             anywhere             tcp dpt:https ctstate NEW
-ufw-before-logging-input  all  --  anywhere             anywhere
-ufw-before-input  all  --  anywhere             anywhere
-ufw-after-input  all  --  anywhere             anywhere
-ufw-after-logging-input  all  --  anywhere             anywhere
-ufw-reject-input  all  --  anywhere             anywhere
-ufw-track-input  all  --  anywhere             anywhere'''
+output = '''Chain INPUT (policy DROP)
+num  target     prot opt source               destination
+1    ufw-before-logging-input  all  --  anywhere             anywhere
+2    ufw-before-input  all  --  anywhere             anywhere
+3    ufw-after-input  all  --  anywhere             anywhere
+4    ufw-after-logging-input  all  --  anywhere             anywhere
+5    ufw-reject-input  all  --  anywhere             anywhere
+6    ufw-track-input  all  --  anywhere             anywhere
+7    DROP       tcp  --  192.168.7.2          123.145.1.2          tcp spt:12 dpt:1233
+8    LOG        all  --  anywhere             anywhere             LOG level warning prefix "INPUT: "'''
 print(parse_iptables_output(output))

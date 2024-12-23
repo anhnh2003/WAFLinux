@@ -1,0 +1,58 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} View Logs {% endblock %}
+
+{% block stylesheets %}
+<link href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css" rel="stylesheet">
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2>IPTables Logs</h2>
+    <div class="table-wrapper">
+        <table id="logTable" class="display">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Chain</th>
+                    <th>Source IP</th>
+                    <th>Destination IP</th>
+                    <th>Protocol</th>
+                    <th>Source Port</th>
+                    <th>Destination Port</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in log_entries %}
+                <tr>
+                    <td>{{ entry.timestamp }}</td>
+                    <td>{{ entry.chain }}</td>
+                    <td>{{ entry.src }}</td>
+                    <td>{{ entry.dst }}</td>
+                    <td>{{ entry.proto }}</td>
+                    <td>{{ entry.spt }}</td>
+                    <td>{{ entry.dpt }}</td>
+                    <td>{{ entry.action }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#logTable').DataTable({
+            "order": [[0, "desc"]],
+            "searching": true,
+            "paging": true,
+            "info": true
+        });
+    });
+</script>
+{% endblock javascripts %}

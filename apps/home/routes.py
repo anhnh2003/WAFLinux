@@ -1,14 +1,13 @@
 # -*- encoding: utf-8 -*-
-"""
-Copyright (c) 2019 - present AppSeed.us
-"""
-
 from apps.home import blueprint
 from flask import render_template, request, flash, redirect, url_for
 from flask_login import login_required
 from jinja2 import TemplateNotFound
 import subprocess
 import re
+import shlex
+import html
+
 @blueprint.route('/')
 @login_required
 def default():
@@ -76,15 +75,15 @@ def forward_status():
 
 sudo_password = 'Gauvoi23'
 def query_iptables(chain):
-    command = "echo {} | sudo -S iptables -L {}".format(sudo_password, chain)
+    command = "echo {} | sudo -S iptables -L {} --line-numbers".format(sudo_password, chain)
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=None, shell=True)
     output = process.communicate()
     return output[0].decode('utf-8')
 def parse_iptables_output(output):
     #parse the output into a list of lists, where each inner list represents a row of the iptables output
-    #the inner lists must have the following format: [target, prot, opt, source, destination, s_port, d_port, detail], if the corresponding field is not present in the output, the value should be an empty string
-    #example output: ACCEPT all -- anywhere anywhere tcp dpt:https ctstate NEW
-    #the correct format should be: ['ACCEPT', 'tcp', '-- 'anywhere', 'anywhere', '', 'https', 'ctstate NEW']
+    #the inner lists must have the following format: [num, target, prot, opt, source, destination, s_port, d_port, detail], if the corresponding field is not present in the output, the value should be an empty string
+    #example output: 7    DROP       tcp  --  192.168.7.2          123.145.1.2          tcp spt:12 dpt:1233
+    #the correct format should be: ['7', 'DROP', 'tcp', '--', '192.168.7.2', '123.145.1.2', '12', '1233', 'tcp']
     table_data = []
     lines = output.split('\n')
     #skip the last empty line
@@ -94,13 +93,15 @@ def parse_iptables_output(output):
             continue
         if line.startswith('target'):
             continue
-        #if line.startswith('ACCEPT') or line.startswith('DROP') or line.startswith('REJECT') or line.startswith('RETURN'):
+        if line.startswith('num'):
+            continue
         parts = line.split()
-        target = parts[0]
-        prot = parts[1]
-        opt = parts[2]
-        source = parts[3]
-        destination = parts[4]
+        num = parts[0]
+        target = parts[1]
+        prot = parts[2]
+        opt = parts[3]
+        source = parts[4]
+        destination = parts[5]
         
         s_port_match = re.search(r'spt:(\S+)', line)
         s_port = s_port_match.group(1) if s_port_match else 'any'
@@ -110,10 +111,10 @@ def parse_iptables_output(output):
         
         # Remove the known fields from the line to get the detail
         detail = line
-        for field in [target, prot, opt, source, destination, f'spt:{s_port}', f'dpt:{d_port}']:
+        for field in [num, target, prot, opt, source, destination, f'spt:{s_port}', f'dpt:{d_port}']:
             detail = detail.replace(field, '', 1).strip()
         
-        table_data.append([target, prot, opt, source, destination, s_port, d_port, detail])
+        table_data.append([num, target, prot, opt, source, destination, s_port, d_port, detail])
     return table_data
 def validate_iptables_command(command):
     # Define a regular expression pattern to match valid iptables commands
@@ -206,7 +207,6 @@ def add_rule():
 
     return render_template('home/add_rule.html', error_message=error_message)
 
-import html
 def sanitize_input(input_value):
     # Implement input sanitization logic here
     return html.escape(input_value)
@@ -225,21 +225,56 @@ def is_valid_rule_number(rule_number):
 @login_required
 def delete_rule():
     chain = request.args.get('chain')
-    rule_number = request.args.get('rule_number')
+    rule_number = int(request.args.get('rule_number'))
 
     if not is_valid_chain(chain) or not is_valid_rule_number(rule_number):
         flash('Invalid chain or rule number.', 'danger')
         return redirect(url_for(f'home_blueprint.{chain.lower()}_status'))
 
+    # Check if the rule is a logging rule
+    command = "echo {} | sudo -S iptables -L {} --line-numbers".format(sudo_password, chain)
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=None, shell=True)
+    output, _ = process.communicate()
+    output = output.decode('utf-8')
+    lines = output.split('\n')
+    rule_line = lines[rule_number]
+
+    if rule_number == 1 and 'LOG' in rule_line:
+        flash('Cannot delete the logging rule.', 'danger')
+        return redirect(url_for(f'home_blueprint.{chain.lower()}_status'))
+
     try:
+        # Delete the rule
         command = "echo {} | sudo -S iptables -D {} {}".format(sudo_password, chain, rule_number)
         subprocess.Popen(command, stdout=subprocess.PIPE, stderr=None, shell=True)
+
     except subprocess.CalledProcessError as e:
         flash(f"An error occurred while deleting the rule: {e}", 'danger')
         return redirect(url_for(f'home_blueprint.{chain.lower()}_status'))
 
     flash('Rule deleted successfully!', 'success')
     return redirect(url_for(f'home_blueprint.{chain.lower()}_status'))
+
+@blueprint.route('/view_log')
+@login_required
+def view_log():
+    log_file = '/var/log/iptables.log'
+    log_entries = []
+
+    with open(log_file, 'r') as file:
+        for line in file:
+            log_entries.append(parse_log_line(line))
+
+    return render_template('home/view_log.html', log_entries=log_entries)
+
+def parse_log_line(line):
+    # Example log line format:
+    # Dec 20 11:31:24 DESKTOP-0KC9F2L kernel: [11974.490683] INPUT: IN=lo OUT= MAC=00:00:00:00:00:00:00:00:00:00:00:00:08:00 SRC=127.0.0.1 DST=127.0.0.1 LEN=60 TOS=0x00 PREC=0x00 TTL=64 ID=62923 DF PROTO=TCP SPT=49104 DPT=5000 WINDOW=65495 RES=0x00 SYN URGP=0
+    pattern = re.compile(r'(?P<timestamp>\w+ \d+ \d+:\d+:\d+) (?P<hostname>\S+) kernel: \[\d+\.\d+\] (?P<chain>\w+): IN=(?P<in>\S*) OUT=(?P<out>\S*) MAC=(?P<mac>\S*) SRC=(?P<src>\S*) DST=(?P<dst>\S*) LEN=(?P<len>\d+) TOS=(?P<tos>\S*) PREC=(?P<prec>\S*) TTL=(?P<ttl>\d+) ID=(?P<id>\d+) DF PROTO=(?P<proto>\S*) SPT=(?P<spt>\d+) DPT=(?P<dpt>\d+) WINDOW=(?P<window>\d+) RES=(?P<res>\S*) SYN URGP=(?P<urgp>\d+)' )
+    match = pattern.match(line)
+    if match:
+        return match.groupdict()
+    return {}
 
 
 
