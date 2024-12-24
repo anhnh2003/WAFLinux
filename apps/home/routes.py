@@ -238,7 +238,7 @@ def delete_rule():
     output = output.decode('utf-8')
     lines = output.split('\n')
     rule_line = lines[rule_number]
-    print('rule number:', rule_number, 'rule line:', rule_line)
+
     if rule_number == 1 and 'LOG' in rule_line:
         flash('Cannot delete the logging rule.', 'danger')
         return redirect(url_for(f'home_blueprint.{chain.lower()}_status'))
