@@ -304,7 +304,7 @@ def data_visualization():
     log_entries = []
 
     with open(log_file, 'r') as file:
-        for line in file:
+        for line in file.strip().splitlines():
             log_entries.append(parse_log_line(line))
     
     if not log_entries:
@@ -322,7 +322,8 @@ def data_visualization():
             aggregated_data[field] = [[key, value] for key, value in counter.items()]
 
     # Send data to the template
-    return render_template('home/data_visualization.html', aggregated_data=json.dumps(aggregated_data))
+    aggregated_data = json.dumps(aggregated_data, indent=4)
+    return render_template('home/data_visualization.html', aggregated_data=aggregated_data)
 
     
 

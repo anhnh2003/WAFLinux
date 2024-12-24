@@ -1,5 +1,5 @@
 import re
-
+from collections import Counter
 def parse_log_line(line):
     # Define the regex pattern
     pattern = re.compile(
@@ -23,15 +23,39 @@ def parse_log_line(line):
     if match:
         return match.groupdict()
     return {}
+import json
+def data_visualization():
+    file = '''
+2024-12-24T10:48:07.096240-05:00 kali kernel: OUTPUT LOG: IN= OUT=eth0 SRC=10.0.2.128 DST=10.0.2.1 LEN=4184 TOS=0x10 PREC=0x00 TTL=64 ID=22697 DF PROTO=TCP SPT=22 DPT=63996 WINDOW=249 RES=0x00 ACK PSH URGP=0
+2024-12-24T10:48:07.100244-05:00 kali kernel: INPUT LOG: IN=eth0 OUT= MAC=00:0c:29:ac:6b:50:00:50:56:c0:00:08:08:00 SRC=10.0.2.1 DST=10.0.2.128 LEN=52 TOS=0x10 PREC=0x00 TTL=63 ID=4930 DF PROTO=TCP SPT=63996 DPT=22 WINDOW=4644 RES=0x00 ACK URGP=0
+2024-12-24T10:48:07.100246-05:00 kali kernel: INPUT LOG: IN=eth0 OUT= MAC=00:0c:29:ac:6b:50:00:50:56:c0:00:08:08:00 SRC=10.0.2.1 DST=10.0.2.128 LEN=52 TOS=0x10 PREC=0x00 TTL=63 ID=4931 DF PROTO=TCP SPT=63996 DPT=22 WINDOW=4644 RES=0x00 ACK URGP=0
+2024-12-24T10:48:07.100247-05:00 kali kernel: INPUT LOG: IN=eth0 OUT= MAC=00:0c:29:ac:6b:50:00:50:56:c0:00:08:08:00 SRC=10.0.2.1 DST=10.0.2.128 LEN=52 TOS=0x10 PREC=0x00 TTL=63 ID=4932 DF PROTO=TCP SPT=63996 DPT=22 WINDOW=4646 RES=0x00 ACK URGP=0
+2024-12-24T10:48:07.100250-05:00 kali kernel: INPUT LOG: IN=eth0 OUT= MAC=00:0c:29:ac:6b:50:00:50:56:c0:00:08:08:00 SRC=10.0.2.1 DST=10.0.2.128 LEN=52 TOS=0x10 PREC=0x00 TTL=63 ID=4933 DF PROTO=TCP SPT=63996 DPT=22 WINDOW=4646 RES=0x00 ACK URGP=0
+2024-12-24T10:48:07.100223-05:00 kali kernel: OUTPUT LOG: IN= OUT=eth0 SRC=10.0.2.128 DST=10.0.2.1 LEN=4184 TOS=0x10 PREC=0x00 TTL=64 ID=22700 DF PROTO=TCP SPT=22 DPT=63996 WINDOW=249 RES=0x00 ACK PSH URGP=0
+2024-12-24T10:48:07.100241-05:00 kali kernel: OUTPUT LOG: IN= OUT=eth0 SRC=10.0.2.128 DST=10.0.2.1 LEN=4184 TOS=0x10 PREC=0x00 TTL=64 ID=22703 DF PROTO=TCP SPT=22 DPT=63996 WINDOW=249 RES=0x00 ACK PSH URGP=0
+'''
+    # Split the multiline string into lines
+    log_entries = []
+    for line in file.strip().splitlines():
+        log_entries.append(parse_log_line(line))
+    
+    if not log_entries:
+        return "No log entries to visualize."
 
-# Example usage
-log_line = "2024-12-22T23:24:59.573504-05:00 kali kernel: INPUT LOG: IN= OUT=eth0 SRC=10.0.2.128 DST=10.0.2.1 LEN=216 TOS=0x10 PREC=0x00 TTL=64 ID=34686 DF PROTO=TCP SPT=22 DPT=55616 WINDOW=697 RES=0x00 ACK PSH URGP=0"
-log_line2 = "2024-12-23T09:52:03.333880-05:00 kali kernel: INPUT LOG: IN=eth0 OUT= MAC=00:0c:29:ac:6b:50:00:50:56:f9:45:95:08:00 SRC=142.250.198.142 DST=10.0.2.128 LEN=84 TOS=0x00 PREC=0x00 TTL=128 ID=42035 PROTO=ICMP TYPE=0 CODE=0 ID=17611 SEQ=2"
-log_line3 = "2024-12-23T09:52:07.302870-05:00 kali kernel: OUTPUT LOG: IN= OUT=eth0 SRC=10.0.2.128 DST=142.250.198.142 LEN=84 TOS=0x00 PREC=0x00 TTL=64 ID=60349 DF PROTO=ICMP TYPE=8 CODE=0 ID=17611 SEQ=6"
-parsed = parse_log_line(log_line)
-print(parsed)
-parsed2 = parse_log_line(log_line2)
-print(parsed2)
-parsed3 = parse_log_line(log_line3)
-print(parsed3)
+    # Fields to visualize
+    fields = ["src_ip", "dst_ip", "protocol", "in_interface", "out_interface", "detail"]
+    
+    # Aggregated data for each field
+    aggregated_data = {}
+    for field in fields:
+        values = [entry[field] for entry in log_entries if field in entry and entry[field]]
+        if values:
+            counter = Counter(values)
+            aggregated_data[field] = [[key, value] for key, value in counter.items()]
 
+    # Send data to the template
+    aggregated_data = json.dumps(aggregated_data, indent=4)
+    return aggregated_data
+
+# Test the function
+print('hello',data_visualization())
