@@ -302,7 +302,6 @@ import json
 def data_visualization():
     log_file = '/var/log/iptables.log'
     log_entries = []
-
     # Read the file and process each line
     with open(log_file, 'r') as file:
         for line in file:
@@ -324,6 +323,7 @@ def data_visualization():
 
     # Convert the aggregated data to JSON format for rendering in the template
     aggregated_data_json = json.dumps(aggregated_data, indent=4)
+
     return render_template('home/data_visualization.html', aggregated_data=aggregated_data_json)
 
     
