@@ -331,7 +331,7 @@ def data_visualization():
             plt.title(f"Distribution of {field}")
 
             # Save the chart to a file
-            chart_path = f"static/{field}_distribution.png"
+            chart_path = f"../static/assets/chart/{field}_distribution.png"
             plt.savefig(chart_path, bbox_inches='tight')
             plt.close()
 
