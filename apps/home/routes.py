@@ -258,10 +258,7 @@ def delete_rule():
 
     flash('Rule deleted successfully!', 'success')
     return redirect(url_for(f'home_blueprint.{chain.lower()}_status'))
-
-@blueprint.route('/view_log')
-@login_required
-def view_log():
+def parse_log_file():
     log_file = '/var/log/iptables.log'
     log_entries = []
 
@@ -269,6 +266,11 @@ def view_log():
         for line in file:
             log_entries.append(parse_log_line(line))
 
+    return log_entries
+@blueprint.route('/view_log')
+@login_required
+def view_log():
+    log_entries = parse_log_file()
     return render_template('home/view_log.html', log_entries=log_entries)
 
 def parse_log_line(line):
@@ -297,18 +299,7 @@ def parse_log_line(line):
 @blueprint.route('/data_visualization')
 @login_required
 def data_visualization():
-    log_file = '/var/log/iptables.log'
-    log_entries = []
-
-    # Read and parse the log file
-    if not os.path.exists(log_file):
-        return "Log file not found."
-
-    with open(log_file, 'r') as file:
-        for line in file:
-            parsed_entry = parse_log_line(line)
-            if parsed_entry:
-                log_entries.append(parsed_entry)
+    log_entries = parse_log_file()
 
     if not log_entries:
         return "No log entries to visualize."
@@ -331,7 +322,7 @@ def data_visualization():
             plt.title(f"Distribution of {field}")
 
             # Save the chart to a file
-            chart_path = f"../static/assets/chart/{field}_distribution.png"
+            chart_path = f"apps/static/assets/chart/{field}_distribution.png"
             plt.savefig(chart_path, bbox_inches='tight')
             plt.close()
 
