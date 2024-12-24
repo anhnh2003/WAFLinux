@@ -303,9 +303,10 @@ def data_visualization():
     log_file = '/var/log/iptables.log'
     log_entries = []
 
+    # Read the file and process each line
     with open(log_file, 'r') as file:
-        for line in file.strip().splitlines():
-            log_entries.append(parse_log_line(line))
+        for line in file:
+            log_entries.append(parse_log_line(line.strip()))  # Strip trailing newline and spaces
     
     if not log_entries:
         return "No log entries to visualize."
@@ -321,9 +322,9 @@ def data_visualization():
             counter = Counter(values)
             aggregated_data[field] = [[key, value] for key, value in counter.items()]
 
-    # Send data to the template
-    aggregated_data = json.dumps(aggregated_data, indent=4)
-    return render_template('home/data_visualization.html', aggregated_data=aggregated_data)
+    # Convert the aggregated data to JSON format for rendering in the template
+    aggregated_data_json = json.dumps(aggregated_data, indent=4)
+    return render_template('home/data_visualization.html', aggregated_data=aggregated_data_json)
 
     
 
