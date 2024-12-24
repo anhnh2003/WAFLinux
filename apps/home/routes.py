@@ -10,6 +10,14 @@ import html
 import matplotlib.pyplot as plt
 from collections import Counter
 import os
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.DEBUG,  # Log messages of level DEBUG and above
+    format='%(asctime)s [%(levelname)s] %(message)s',  # Log message format
+    handlers=[logging.StreamHandler()]  # Log to the console
+)
 
 sudo_password = '123456'
 @blueprint.route('/')
@@ -306,7 +314,6 @@ def data_visualization():
     with open(log_file, 'r') as file:
         for line in file:
             log_entries.append(parse_log_line(line.strip()))  # Strip trailing newline and spaces
-    
     if not log_entries:
         return "No log entries to visualize."
 
@@ -323,6 +330,8 @@ def data_visualization():
 
     # Convert the aggregated data to JSON format for rendering in the template
     aggregated_data_json = json.dumps(aggregated_data, indent=4)
+    logging.debug(f"Aggregated data: {aggregated_data}")
+
 
     return render_template('home/data_visualization.html', aggregated_data=aggregated_data_json)
 
