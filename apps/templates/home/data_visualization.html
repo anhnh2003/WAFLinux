@@ -46,7 +46,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.20/c3.min.js"></script>
 <script>
     // Data passed from the Flask backend
-    const aggregatedData = {{ aggregated_data | tojson | safe }};
+    const aggregatedData = JSON.parse('{{ aggregated_data | tojson | safe }}');
 
     // Function to render pie charts
     function renderPieChart(containerId, title, data) {
