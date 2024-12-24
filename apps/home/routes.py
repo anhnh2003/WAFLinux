@@ -275,9 +275,12 @@ def parse_log_line(line):
         r'(?:MAC=(?P<mac>[A-Fa-f0-9: ]+)\s+)?'
         r'SRC=(?P<src_ip>\S+)\s+DST=(?P<dst_ip>\S+)\s+LEN=(?P<length>\d+)\s+'
         r'TOS=(?P<tos>\S+)\s+PREC=(?P<prec>\S+)\s+'
-        r'TTL=(?P<ttl>\d+)\s+ID=(?P<id>\d+)\s+(?P<flags>\S+)\s+PROTO=(?P<protocol>\S+)\s+'
-        r'SPT=(?P<src_port>\d+)\s+DPT=(?P<dst_port>\d+)\s+WINDOW=(?P<window>\d+)\s+'
-        r'RES=(?P<res>\S+)\s+(?P<detail>.+)?'
+        r'TTL=(?P<ttl>\d+)\s+ID=(?P<id>\d+)\s+'
+        r'(?:DF\s+)?PROTO=(?P<protocol>\S+)\s+'
+        r'(?:SPT=(?P<src_port>\d+)\s+DPT=(?P<dst_port>\d+)\s+)?'
+        r'(?:TYPE=(?P<type>\d+)\s+CODE=(?P<code>\d+)\s+ID=(?P<icmp_id>\d+)\s+SEQ=(?P<icmp_seq>\d+)\s+)?'
+        r'(?:WINDOW=(?P<window>\d+)\s+RES=(?P<res>\S+)\s+)?'
+        r'(?P<detail>.+)?'
     )
 
     # Match the line using the pattern
