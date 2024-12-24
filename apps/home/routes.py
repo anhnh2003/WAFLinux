@@ -7,6 +7,10 @@ import subprocess
 import re
 import shlex
 import html
+import matplotlib.pyplot as plt
+from collections import Counter
+import os
+
 sudo_password = '123456'
 @blueprint.route('/')
 @login_required
