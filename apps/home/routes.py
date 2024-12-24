@@ -290,6 +290,50 @@ def parse_log_line(line):
     if match:
         return match.groupdict()
     return {}
+@blueprint.route('/data_visualization')
+@login_required
+def data_visualization():
+    log_file = '/var/log/iptables.log'
+    log_entries = []
 
+    # Read and parse the log file
+    if not os.path.exists(log_file):
+        return "Log file not found."
 
+    with open(log_file, 'r') as file:
+        for line in file:
+            parsed_entry = parse_log_line(line)
+            if parsed_entry:
+                log_entries.append(parsed_entry)
+
+    if not log_entries:
+        return "No log entries to visualize."
+
+    # Fields to visualize
+    fields = ["src_ip", "dst_ip", "protocol", "in_interface", "out_interface", "detail"]
+    
+    # Create pie charts for each field
+    charts = {}
+    for field in fields:
+        values = [entry[field] for entry in log_entries if field in entry and entry[field]]
+        if values:
+            counter = Counter(values)
+            labels, sizes = zip(*counter.items())
+
+            # Create pie chart
+            fig, ax = plt.subplots()
+            ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, textprops={"fontsize": 8})
+            ax.axis('equal')  # Equal aspect ratio ensures the pie is drawn as a circle.
+            plt.title(f"Distribution of {field}")
+
+            # Save the chart to a file
+            chart_path = f"static/{field}_distribution.png"
+            plt.savefig(chart_path, bbox_inches='tight')
+            plt.close()
+
+            charts[field] = chart_path
+
+    return render_template('home/data_visualization.html', charts=charts)
+
+    
 

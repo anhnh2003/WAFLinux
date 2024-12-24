@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .charts {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .chart {
+            margin: 10px;
+            text-align: center;
+        }
+        img {
+            max-width: 300px;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Data Visualization</h1>
+        <div class="charts">
+            {% for field in fields %}
+            <div class="chart">
+                <h3>{{ field }}</h3>
+                <img src="/static/{{ field }}_distribution.png" alt="{{ field }} distribution">
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
