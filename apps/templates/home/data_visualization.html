@@ -13,8 +13,14 @@
         h1 {
             text-align: center;
         }
+        #charts-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
         .chart-container {
-            margin: 20px 0;
+            margin: 20px;
+            width: 300px;
         }
         .chart-title {
             text-align: center;
@@ -23,8 +29,7 @@
             font-weight: bold;
         }
         .chart {
-            margin: 0 auto;
-            width: 80%;
+            height: 300px;
         }
         .description {
             text-align: center;
@@ -46,8 +51,17 @@
     <h1>IPTables Log Data Visualization</h1>
     <div id="charts-container"></div>
     <script>
-        // Sample JSON data
+        // Load the JSON data passed from the Flask backend
         const aggregatedData = JSON.parse(`{{ aggregated_data|safe }}`);
+
+        // Exclude the 'details' field
+        const fieldsToExclude = ['detail'];
+        const filteredData = Object.keys(aggregatedData)
+            .filter(field => !fieldsToExclude.includes(field))
+            .reduce((obj, key) => {
+                obj[key] = aggregatedData[key];
+                return obj;
+            }, {});
 
         // Function to render pie charts
         function renderPieChart(containerId, title, data) {
@@ -67,45 +81,41 @@
             chartElement.className = 'chart';
             container.appendChild(chartElement);
 
-            // Add description
-            const description = document.createElement('div');
-            description.className = 'description';
-            container.appendChild(description);
-
             document.getElementById('charts-container').appendChild(container);
 
-            // Generate chart
+            // Generate chart with pastel border colors
             c3.generate({
                 bindto: `#${containerId}`,
                 data: {
                     columns: data,
                     type: 'pie',
-                    onclick: function (d, i) { console.log("onclick", d, i); },
-                    onmouseover: function (d, i) { console.log("onmouseover", d, i); },
-                    onmouseout: function (d, i) { console.log("onmouseout", d, i); }
                 },
                 pie: {
                     label: {
-                        format: function (value, ratio, id) {
+                        format: function () {
                             return ''; // No percentage displayed on the chart
-                        }
-                    }
+                        },
+                    },
+                },
+                color: {
+                    pattern: [
+                        '#A8D5E2', '#F6D186', '#FFABAB', '#B8F2E6', 
+                        '#FFC3A0', '#D5AAFF', '#C3E8FF', '#FFE7A0'
+                    ], // Pastel colors
+                },
+                transition: {
+                    duration: 500,
+                },
+                size: {
+                    width: 300,
+                    height: 300,
                 }
-            });
-
-            // Add legend description
-            data.forEach(([key, value]) => {
-                const color = d3.scaleOrdinal(d3.schemeCategory10)(key);
-                const legendItem = document.createElement('span');
-                legendItem.style.backgroundColor = color;
-                legendItem.innerText = `${key}`;
-                description.appendChild(legendItem);
             });
         }
 
         // Render a pie chart for each field in the JSON data
-        Object.keys(aggregatedData).forEach((field, index) => {
-            renderPieChart(`chart-${index}`, `Distribution of ${field}`, aggregatedData[field]);
+        Object.keys(filteredData).forEach((field, index) => {
+            renderPieChart(`chart-${index}`, `Distribution of ${field}`, filteredData[field]);
         });
     </script>
 </body>
