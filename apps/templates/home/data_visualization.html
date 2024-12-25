@@ -8,6 +8,20 @@
     .chart-container {
         margin-bottom: 30px;
     }
+    .legend-container {
+        margin-top: 10px;
+    }
+    .legend-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px;
+    }
+    .legend-item span {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        margin-right: 5px;
+    }
 </style>
 {% endblock stylesheets %}
 
@@ -55,7 +69,7 @@
         chartContainer.className = 'chart-container';
         document.getElementById('charts-container').appendChild(chartContainer);
 
-        c3.generate({
+        const chart = c3.generate({
             bindto: `#${containerId}`,
             data: {
                 columns: data,
@@ -64,6 +78,25 @@
             pie: {
                 title: title,
             },
+            tooltip: {
+                format: {
+                    value: function (value, ratio, id) {
+                        return d3.format('.1%')(ratio);
+                    }
+                }
+            }
+        });
+
+        // Create legend
+        const legendContainer = document.createElement('div');
+        legendContainer.className = 'legend-container';
+        chartContainer.appendChild(legendContainer);
+
+        data.forEach(item => {
+            const legendItem = document.createElement('div');
+            legendItem.className = 'legend-item';
+            legendItem.innerHTML = `<span style="background-color:${chart.color(item[0])};"></span> ${item[0]}`;
+            legendContainer.appendChild(legendItem);
         });
     }
 
