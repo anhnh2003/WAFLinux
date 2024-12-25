@@ -47,14 +47,7 @@
     <div id="charts-container"></div>
     <script>
         // Sample JSON data
-        const aggregatedData = {
-            src_ip: [['10.0.2.1', 4386], ['10.0.2.128', 4392], ['10.0.2.2', 27], ['20.205.243.166', 174], ['10.0.2.254', 2]],
-            dst_ip: [['10.0.2.128', 4586], ['10.0.2.1', 4197], ['10.0.2.2', 27], ['20.205.243.166', 166], ['10.0.2.255', 3], ['10.0.2.254', 2]],
-            protocol: [['TCP', 8920], ['UDP', 61]],
-            in_interface: [['eth0', 4589]],
-            out_interface: [['eth0', 4392]],
-            detail: [['ACK URGP=0', 3702], ['ACK PSH URGP=0', 2577], ['LEN=49', 12], ['LEN=47', 6], ['SYN URGP=0', 655], ['ACK SYN URGP=0', 655]]
-        };
+        const aggregatedData = JSON.parse(`{{ aggregated_data|safe }}`);
 
         // Function to render pie charts
         function renderPieChart(containerId, title, data) {

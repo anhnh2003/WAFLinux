@@ -308,12 +308,7 @@ import json
 @blueprint.route('/data_visualization')
 @login_required
 def data_visualization():
-    log_file = '/var/log/iptables.log'
-    log_entries = []
-    # Read the file and process each line
-    with open(log_file, 'r') as file:
-        for line in file:
-            log_entries.append(parse_log_line(line.strip()))  # Strip trailing newline and spaces
+    log_entries = parse_log_file()
     if not log_entries:
         return "No log entries to visualize."
 
