@@ -128,13 +128,14 @@ def parse_iptables_output(output):
         
         table_data.append([num, target, prot, opt, source, destination, s_port, d_port, detail])
     return table_data
+
 def validate_iptables_command(command):
-    # Define a regular expression pattern to match valid iptables commands
+    # Define a strict regular expression to match valid iptables commands
     iptables_pattern = re.compile(
         r"^sudo\s+iptables\s+"
         r"(-[A-Z]\s+)?"
-        r"(-[a-zA-Z0-9-]+\s+)*"
-        r"(-[a-zA-Z0-9-]+)?$"
+        r"(-[a-zA-Z0-9-]+(\s+[a-zA-Z0-9.:/-]+)*)\s*"
+        r"(-j\s+[A-Z]+)?$"
     )
 
     # Check if the command matches the pattern
@@ -155,6 +156,38 @@ def validate_iptables_command(command):
     for pattern in forbidden_patterns:
         if re.search(pattern, command):
             return False
+
+    # Validate command structure further
+    allowed_keywords = [
+        # Chain names
+        "INPUT", "OUTPUT", "FORWARD",
+        
+        # Actions
+        "ACCEPT", "DROP", "REJECT", "LOG", "RETURN",
+        
+        # Common flags
+        "-A", "-D", "-I", "-R", "-L", "-F", "-P", "-N", "-X",
+        "-s", "-d", "-p", "-m", "-j", "-o", "-i", "--dport", "--sport",
+        "--source-port", "--destination-port", "--icmp-type", 
+        
+        # Protocols
+        "tcp", "udp", "icmp", "all",
+        
+        # Match extensions
+        "--ctstate", "--state", "--match", "--conntrack", 
+        "--limit", "--limit-burst", "--uid-owner", "--gid-owner",
+        "--comment", 
+        
+        # Connection states
+        "NEW", "ESTABLISHED", "RELATED", "INVALID"
+    ]
+    
+    command_parts = command.split()
+    for part in command_parts:
+        # Skip options with values (e.g., IPs, ports, or comments) as they're dynamic
+        if part.startswith("-") or part.startswith("--"):
+            if part not in allowed_keywords:
+                return False
 
     return True
 #function to add rule to the INPUT chain in iptables

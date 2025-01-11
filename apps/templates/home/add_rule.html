@@ -206,73 +206,100 @@
         }
 
         document.addEventListener('DOMContentLoaded', function () {
-            document.getElementById('rulesForm').addEventListener('submit', function (event) {
-                var isValid = true;
-                var manualRule = document.querySelector('textarea[name="manual_rule"]').value.trim();
-                var normalRules = document.querySelectorAll('#rulesContainer .form-row');
+    const rulesForm = document.getElementById('rulesForm');
+    const submitButton = rulesForm.querySelector('button[type="submit"]');
+    const rulesContainer = document.getElementById('rulesContainer');
+    const manualRuleTextarea = document.querySelector('textarea[name="manual_rule"]');
 
-                if (!manualRule && normalRules.length === 0) {
-                    isValid = false;
-                    alert('Please fill out either the Normal Rule form or the Manual Rule form.');
-                }
+    // Function to toggle the submit button
+    function toggleSubmitButton() {
+        const hasNormalRules = rulesContainer.querySelectorAll('.form-row').length > 0;
+        const hasManualRule = manualRuleTextarea.value.trim().length > 0;
 
-                // Validate target field
-                var targetFields = document.querySelectorAll('select[name="target[]"]');
-                var validTargets = ['drop', 'accept', 'reject', 'log', 'return'];
-                targetFields.forEach(function (field) {
-                    var errorMessage = field.nextElementSibling;
-                    if (!validTargets.includes(field.value.toLowerCase())) {
-                        isValid = false;
-                        field.classList.add('is-invalid');
-                        errorMessage.style.display = 'block';
-                    } else {
-                        field.classList.remove('is-invalid');
-                        errorMessage.style.display = 'none';
-                    }
-                });
+        if (hasNormalRules || hasManualRule) {
+            submitButton.disabled = false;
+        } else {
+            submitButton.disabled = true;
+        }
+    }
 
-                // Validate IP address fields
-                var ipFields = document.querySelectorAll('input[name="source[]"], input[name="destination[]"]');
-                var ipPattern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-                ipFields.forEach(function (field) {
-                    var errorMessage = field.nextElementSibling;
-                    if (!ipPattern.test(field.value)) {
-                        isValid = false;
-                        field.classList.add('is-invalid');
-                        errorMessage.style.display = 'block';
-                    } else {
-                        field.classList.remove('is-invalid');
-                        errorMessage.style.display = 'none';
-                    }
-                });
+    // Attach event listeners to detect changes
+    manualRuleTextarea.addEventListener('input', toggleSubmitButton);
 
-                // Validate port fields
-                var portFields = document.querySelectorAll('input[name="sport[]"], input[name="dport[]"]');
-                var portPattern = /^([0-9]{1,5})$/;
-                portFields.forEach(function (field) {
-                    var port = parseInt(field.value, 10);
-                    var errorMessage = field.nextElementSibling;
-                    if (!portPattern.test(field.value) || port < 1 || port > 65535) {
-                        isValid = false;
-                        field.classList.add('is-invalid');
-                        errorMessage.style.display = 'block';
-                    } else {
-                        field.classList.remove('is-invalid');
-                        errorMessage.style.display = 'none';
-                    }
-                });
+    document.getElementById('addRuleButton').addEventListener('click', function () {
+        // Add a new rule
+        const newRow = document.createElement('div');
+        newRow.className = 'form-row';
+        newRow.innerHTML = `
+            <div class="rule-header">
+                <span>Rule</span>
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeRule(this)">Delete</button>
+            </div>
+            <div class="col">
+                <select class="form-control" name="chain[]">
+                    <option value="INPUT">INPUT</option>
+                    <option value="OUTPUT">OUTPUT</option>
+                    <option value="FORWARD">FORWARD</option>
+                </select>
+            </div>
+            <div class="col">
+                <select class="form-control" name="target[]" required>
+                    <option value="drop">DROP</option>
+                    <option value="accept">ACCEPT</option>
+                    <option value="reject">REJECT</option>
+                    <option value="log">LOG</option>
+                    <option value="return">RETURN</option>
+                </select>
+            </div>
+            <div class="col">
+                <input type="text" class="form-control" name="prot[]" placeholder="Protocol" required>
+            </div>
+            <div class="col">
+                <input type="text" class="form-control" name="source[]" placeholder="Source" required>
+            </div>
+            <div class="col">
+                <input type="text" class="form-control" name="destination[]" placeholder="Destination" required>
+            </div>
+            <div class="col">
+                <input type="text" class="form-control" name="sport[]" placeholder="Source Port">
+            </div>
+            <div class="col">
+                <input type="text" class="form-control" name="dport[]" placeholder="Destination Port">
+            </div>
+        `;
+        rulesContainer.appendChild(newRow);
 
-                if (!isValid) {
-                    event.preventDefault();
-                }
-            });
+        // Update button state
+        toggleSubmitButton();
+    });
 
-            // Display error message if present
-            var errorMessage = document.getElementById('errorMessage').value;
-            if (errorMessage) {
-                alert(errorMessage);
-            }
-        });
+    window.removeRule = function (button) {
+        const ruleRow = button.closest('.form-row');
+        ruleRow.remove();
+        toggleSubmitButton();
+    };
+
+    // Initialize the button state on load
+    toggleSubmitButton();
+
+    // Form validation on submit
+    rulesForm.addEventListener('submit', function (event) {
+        let isValid = true;
+
+        // Validation for manual rule
+        const manualRule = manualRuleTextarea.value.trim();
+        const normalRules = rulesContainer.querySelectorAll('.form-row');
+
+        if (!manualRule && normalRules.length === 0) {
+            isValid = false;
+            alert('Please fill out either the Normal Rule form or the Manual Rule form.');
+        }
+
+        if (!isValid) {
+            event.preventDefault();
+        }
+    });
+});
     </script>
 
 {% endblock content %}
