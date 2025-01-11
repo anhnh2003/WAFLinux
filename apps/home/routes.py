@@ -167,10 +167,11 @@ def add_rule():
         if manual_rule:
             if validate_iptables_command(manual_rule):
                 try:
-                    subprocess.run(shlex.split(manual_rule), check=True)
+                    command = f"echo {sudo_password} | sudo -S {manual_rule}"
+                    subprocess.run(command, shell=True, check=True)
                     flash('Rule added successfully!', 'success')
                 except subprocess.CalledProcessError as e:
-                    error_message = e.stderr.decode('utf-8')
+                    error_message = e.stderr.decode('utf-8') if e.stderr else str(e)
                     flash(f"An error occurred while adding the rule: {error_message}", 'danger')
             else:
                 error_message = 'Invalid iptables command.'
