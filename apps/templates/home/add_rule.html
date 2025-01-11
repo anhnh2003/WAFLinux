@@ -41,6 +41,10 @@
             align-items: center;
             margin-bottom: 10px;
         }
+        .manual-rule-container {
+            display: none;
+            margin-top: 20px;
+        }
     </style>
 
     <!-- ============================================================== -->
@@ -125,6 +129,10 @@
                 </div>
             </div>
             <button type="button" class="btn btn-secondary" id="addRuleButton">Add New Rule</button>
+            <button type="button" class="btn btn-info" id="manualRuleButton">Manual Rule</button>
+            <div class="manual-rule-container" id="manualRuleContainer">
+                <textarea class="form-control" name="manual_rule" placeholder="Enter iptables command"></textarea>
+            </div>
             <button type="submit" class="btn btn-primary">Submit</button>
         </form>
     </div>
@@ -181,6 +189,15 @@
             `;
             rulesContainer.appendChild(newRow);
             ruleNumber++;
+        });
+
+        document.getElementById('manualRuleButton').addEventListener('click', function() {
+            var manualRuleContainer = document.getElementById('manualRuleContainer');
+            if (manualRuleContainer.style.display === 'none' || manualRuleContainer.style.display === '') {
+                manualRuleContainer.style.display = 'block';
+            } else {
+                manualRuleContainer.style.display = 'none';
+            }
         });
 
         function removeRule(button) {
