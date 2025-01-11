@@ -208,6 +208,13 @@
         document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('rulesForm').addEventListener('submit', function (event) {
                 var isValid = true;
+                var manualRule = document.querySelector('textarea[name="manual_rule"]').value.trim();
+                var normalRules = document.querySelectorAll('#rulesContainer .form-row');
+
+                if (!manualRule && normalRules.length === 0) {
+                    isValid = false;
+                    alert('Please fill out either the Normal Rule form or the Manual Rule form.');
+                }
 
                 // Validate target field
                 var targetFields = document.querySelectorAll('select[name="target[]"]');
