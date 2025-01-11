@@ -131,7 +131,7 @@ def parse_iptables_output(output):
 def validate_iptables_command(command):
     # Define a regular expression pattern to match valid iptables commands
     iptables_pattern = re.compile(
-        r"^iptables\s+"
+        r"^sudo\s+iptables\s+"
         r"(-[A-Z]\s+)?"
         r"(-[a-zA-Z0-9-]+\s+)*"
         r"(-[a-zA-Z0-9-]+)?$"
@@ -167,7 +167,7 @@ def add_rule():
         if manual_rule:
             if validate_iptables_command(manual_rule):
                 try:
-                    command = f"echo {sudo_password} | sudo -S {manual_rule}"
+                    command = f"echo {sudo_password} | {manual_rule}"
                     subprocess.run(command, shell=True, check=True)
                     flash('Rule added successfully!', 'success')
                 except subprocess.CalledProcessError as e:
@@ -185,6 +185,10 @@ def add_rule():
         destinations = request.form.getlist('destination[]')
         sports = request.form.getlist('sport[]')
         dports = request.form.getlist('dport[]')
+
+        if not chains and not manual_rule:
+            flash('Please fill out either the Normal Rule form or the Manual Rule form.', 'danger')
+            return redirect(url_for('home_blueprint.add_rule'))
 
         for chain, target, prot, source, destination, sport, dport in zip(chains, targets, prots, sources, destinations, sports, dports):
             # Sanitize inputs to prevent XSS, SQLi, etc.
